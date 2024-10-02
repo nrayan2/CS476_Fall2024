@@ -9,11 +9,13 @@ object FuzzyLogicGates {
   private val gates = mutable.Map[String, FuzzyGate]()
 
   // helper to assign gate with its operation
+  // allows user to define custom logic gates with behavior
   def assignGate(name: String, operation: List[Double] => Double): Unit = {
     GateOperations.assignGate(name, operation)
   }
 
   // helper to evaluate a gate given input values
+  // if gate found, applies the gate's operation, and otherwise, return none
   def evaluateGate(gateName: String, inputs: List[Double]): Option[Double] = {
     GateOperations.evaluateGate(gateName, inputs)
   }
