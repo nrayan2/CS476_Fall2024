@@ -39,7 +39,8 @@ object GateOperations {
   def assignVariable(name: String, value: Double): Unit = {
     if (scopes.nonEmpty) {
       scopes.top(name) = value
-    } else {
+    } 
+    else {
       // global scope
       val globalScope = mutable.Map[String, Double](name -> value)
       scopes.push(globalScope)
@@ -60,8 +61,10 @@ object GateOperations {
     inputs.reduce((a, b) => math.abs(a - b))
   }
 
-  def addVariable(className: String, varName: String, value: Any): Unit = {classes.get(className).foreach(_.addVariable(varName, value))}
-  def addMethod(className: String, methodName: String, method: MethodDef): Unit = {classes.get(className).foreach(_.addMethod(methodName, method))}
-  def createInstance(className: String): ClassDef = {classes.getOrElse(className, throw new NoSuchElementException("class is not found"))}
-  def InvokeMethod(instance: ClassDef, methodName: String, params: Map[String, Any]): Any = {instance.InvokeMethod(methodName, params)}
+  def addVariable(className: String, varName: String, value: Any): Unit = 
+    {classes.get(className).foreach(_.addVariable(varName, value))}
+  def addMethod(className: String, methodName: String, method: MethodDef): Unit = 
+    {classes.get(className).foreach(_.addMethod(methodName, method))}
+  def createInstance(className: String): ClassDef = 
+    {classes.getOrElse(className, throw new NoSuchElementException("class is not found"))}
 }

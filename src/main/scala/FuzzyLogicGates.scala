@@ -12,10 +12,14 @@ case class ClassDef(
   parent: Option[ClassDef] = None
 ) {
   
-  def addVariable(varName: String, value: Any): Unit = {variables(varName) = value}
-  def addMethod(MethodName: String, method: MethodDef): Unit = {methods(MethodName) = method}
-  def getVariable(varName: String): Option[Any] = {variables.get(varName).orElse(parent.flatMap(_.getVariable(varName)))}
-  def InvokeMethod(methodName: String, params: Map[String, Any]): Any = {
+  def addVariable(varName: String, value: Any): Unit = 
+    {variables(varName) = value}
+  def addMethod(MethodName: String, method: MethodDef): Unit = 
+    {methods(MethodName) = method}
+  def getVariable(varName: String): Option[Any] = 
+    {variables.get(varName).orElse(parent.flatMap(_.getVariable(varName)))}
+  def InvokeMethod(methodName: String, params: Map[String, Any]): Any = 
+  {
     methods.get(methodName)
       .orElse(parent.flatMap(_.methods.get(methodName)))
       .map(_.execute(params))
@@ -28,7 +32,7 @@ case class MethodDef(parameters: List[String], body: Map[String, Any] => Any) {d
 object FuzzyLogicGates {
   // map to store gates and operations
   private val gates = mutable.Map[String, FuzzyGate]()
-  private val classRegistry: mutable.Map[String, FuzzyGate] = mutable.Map()
+  private val classRegistry: mutable.Map[String, ClassDef] = mutable.Map()
 
   // helper to assign gate with its operation
   // allows user to define custom logic gates with behavior
@@ -42,9 +46,13 @@ object FuzzyLogicGates {
     GateOperations.evaluateGate(gateName, inputs)
   }
 
-  def defineClass(className: String, methodName: String, method: List[Double] =>Double): Unit =
-    {
-      classRegistry.get(className).foreach
-    } 
+  def defineClass(className: String, methodName: String, params: List[String], method: Map[String, Any] => Any): Unit = {
+    val newClass = classRegistry.getOrElseUpdate(className, ClassDef(name = className))
+    val newMethod = MethodDef(params, method)
+    newClass.addMethod(methodName, newMethod)
+  }
 
+  def createInstance(className: String): ClassDef = {
+    classRegistry.getOrElse(className, throw new NoSuchElementException("Class not found"))
+  }
 }

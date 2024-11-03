@@ -1,5 +1,5 @@
 import FuzzyLogic._
-import FuzzyLogicGates.{evaluateGate => evalGateFromFuzzyLogicGates}
+import FuzzyLogicGates.{defineClass, createInstance, evaluateGate => evalGateFromFuzzyLogicGates}
 import GateOperations.{assignGate, evaluateGate, enterScope, exitScope, assignVariable, getVariable, testGate, gateRegistry}
 
 object Main {
@@ -23,16 +23,16 @@ object Main {
     // filters out elements with membership values less than the specified alpha
     println("Alpha Cut (0.6): " + alphaCut(setA, 0.6))
 
-    // assign and eval normal gate
-    assignGate("logicGate1", inputs => inputs.sum)
-    val result1 = evaluateGate("logicGate1", List(0.5, 0.7))
-    println(s"Evaluation of logicGate1 with inputs [0.5, 0.7]: ${result1.getOrElse("Evaluation Failed")}")
+    // define new class
+    defineClass("exampleClass", "methodTest", List("input1", "input2"), (inputs: Map[String, Any]) => 
+      inputs.values.map(_.asInstanceOf[Double]).sum
+    )
 
-    // enter scope assign variables and check
-    enterScope()
-    assignVariable("A", 0.2)
-    assignVariable("B", 0.8)
-    println(s"Value of A in current scope: ${getVariable("A").getOrElse("Not Found")}")
-    exitScope()
+    // create instance
+    val instance = createInstance("exampleClass")
+
+    // add variable to instance
+    instance.addVariable("input", 0.5)
+    println(s"Variable 'input' in instance: ${instance.getVariable("input")}")
   }
 }
