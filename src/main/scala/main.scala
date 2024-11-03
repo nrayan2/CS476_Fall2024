@@ -1,5 +1,5 @@
 import FuzzyLogic._
-import FuzzyLogicGates.{evaluateGate => evalGateFromFuzzyLogicGates}
+import FuzzyLogicGates.{defineClass, createInstance, evaluateGate => evalGateFromFuzzyLogicGates}
 import GateOperations.{assignGate, evaluateGate, enterScope, exitScope, assignVariable, getVariable, testGate, gateRegistry}
 
 object Main {
@@ -8,6 +8,19 @@ object Main {
     val setA = List(FuzzyElement("x1", 0.4), FuzzyElement("x2", 0.7))
     val setB = List(FuzzyElement("x1", 0.5), FuzzyElement("x2", 0.6))
 
+    // combines membership values by taking the max for each element
+    println("Fuzzy Union: " + fuzzyUnion(setA, setB))
+    // combines membership values by taking the min for each element
+    println("Fuzzy Intersection: " + fuzzyIntersection(setA, setB))
+    // calculates the complement of each membership value (1 - membership)
+    println("Fuzzy Complement: " + fuzzyComplement(setA))
+    // sums the membership values of two sets but ensures values don't exceed 1
+    println("Fuzzy Addition: " + fuzzyAddition(setA, setB))
+    // multiplies the membership values of two sets
+    println("Fuzzy Multiplication: " + fuzzyMultiplication(setA, setB))
+    // calculates the absolute difference between membership values of two sets
+    println("Fuzzy XOR: " + fuzzyXOR(setA, setB))
+    // filters out elements with membership values less than the specified alpha
     println("Fuzzy Union: " + fuzzyUnion(setA, setB))
     println("Fuzzy Intersection: " + fuzzyIntersection(setA, setB))
     println("Fuzzy Complement: " + fuzzyComplement(setA))
@@ -16,21 +29,16 @@ object Main {
     println("Fuzzy XOR: " + fuzzyXOR(setA, setB))
     println("Alpha Cut (0.6): " + alphaCut(setA, 0.6))
 
-    // assign and eval normal gate
-    assignGate("logicGate1", inputs => inputs.sum)
-    val result1 = evaluateGate("logicGate1", List(0.5, 0.7))
-    println(s"Evaluation of logicGate1 with inputs [0.5, 0.7]: ${result1.getOrElse("Evaluation Failed")}")
+    // define new class
+    defineClass("exampleClass", "methodTest", List("input1", "input2"), (inputs: Map[String, Any]) => 
+      inputs.values.map(_.asInstanceOf[Double]).sum
+    )
 
-    // enter scope assign variables and check
-    enterScope()
-    assignVariable("A", 0.2)
-    assignVariable("B", 0.8)
-    println(s"Value of A in current scope: ${getVariable("A").getOrElse("Not Found")}")
-    exitScope()
+    // create instance
+    val instance = createInstance("exampleClass")
 
-    // test compositeGate
-    assignGate("compositeGate", inputs => inputs.reduce(_ - _))
-    val testResult = testGate("compositeGate", List(0.2, 0.6, 0.5), -0.9)
-    println(s"Test compositeGate: ${if (testResult) "Passed" else "Failed"}")
+    // add variable to instance
+    instance.addVariable("input", 0.5)
+    println(s"Variable 'input' in instance: ${instance.getVariable("input")}")
   }
 }

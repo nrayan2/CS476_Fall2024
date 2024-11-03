@@ -1,7 +1,7 @@
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
-import FuzzyLogicGates.{evaluateGate => evalGateFromFuzzyLogicGates}
-import GateOperations.{assignGate, evaluateGate, enterScope, exitScope, assignVariable, getVariable, testGate}
+import FuzzyLogicGates.{defineClass, createInstance, evaluateGate => evalGateFromFuzzyLogicGates}
+import GateOperations.{createClass, assignGate, evaluateGate, enterScope, exitScope, assignVariable, getVariable, testGate}
 import FuzzyLogic._
 
 class FuzzyLogicTest extends AnyFlatSpec with Matchers {
@@ -83,7 +83,7 @@ class FuzzyLogicTest extends AnyFlatSpec with Matchers {
     exitScope()
   }
 
-  it should "test gates with expected vals" in {
+  it should "test gates w expected vals" in {
     assignGate("testGateXOR", inputs => inputs.reduce(_ - _))
     testGate("testGateXOR", List(0.3, 0.6), -0.3) shouldBe true
   }
@@ -92,7 +92,99 @@ class FuzzyLogicTest extends AnyFlatSpec with Matchers {
     assignGate("incompleteGate", inputs => if (inputs.isEmpty) 0.0 else inputs.sum)
     val result = evaluateGate("incompleteGate", List()).getOrElse(0.0)
     result shouldBe 0.0
-}
+  }
 
+  behavior of "Fuzzy logic DSL w classes and inheritance"
 
+  it should "define and invoke a method on a class instance" in {
+    // define class w method that takes two params and sums
+    defineClass("SimpleClass", "sumMethod", List("a", "b"), params => 
+      params("a").asInstanceOf[Double] + params("b").asInstanceOf[Double]
+    )
+
+    // create instance and invoke method
+    val instance = createInstance("SimpleClass")
+    val result = instance.InvokeMethod("sumMethod", Map("a" -> 3.5, "b" -> 2.5))
+    result shouldBe 6.0
+  }
+
+  it should "support variable shadowing in subclasses" in {
+    // define base and derived classes w same variable
+    defineClass("BaseClassCopy", "getVar", List(), _ => 1)
+    val base = createInstance("BaseClassCopy")
+    base.addVariable("x", 10)
+
+    defineClass("DerivedClassCopy", "getVar", List(), _ => 2)
+    val derived = createInstance("DerivedClassCopy")
+    derived.addVariable("x", 20)
+
+    // check variable shadowing
+    base.getVariable("x") shouldBe Some(10)
+    derived.getVariable("x") shouldBe Some(20)
+  }
+
+  it should "allow nested classes" in {
+    // define class w nested class
+    defineClass("OuterClass", "outerMethod", List(), _ => "outer result")
+    defineClass("OuterClass.InnerClass", "innerMethod", List(), _ => "inner result")
+
+    // create instances and invoke method
+    val outer = createInstance("OuterClass")
+    val inner = createInstance("OuterClass.InnerClass")
+
+    val outerResult = outer.InvokeMethod("outerMethod", Map())
+    val innerResult = inner.InvokeMethod("innerMethod", Map())
+
+    outerResult shouldBe "outer result"
+    innerResult shouldBe "inner result"
+  }
+
+  it should "define and evaluate custom gates" in {
+    // define custom gate
+    assignGate("customSumGate", inputs => inputs.sum)
+
+    // evaluate the gate w sample inputs
+    val gateResult = evaluateGate("customSumGate", List(1.5, 2.5, 3.0))
+    gateResult shouldBe Some(7.0)
+  }
+
+  it should "create instances and work w custom methods and variables" in {
+    // define class w method that calculates area of rectangle
+    defineClass("Rectangle", "calculateArea", List("length", "width"), params => 
+      params("length").asInstanceOf[Double] * params("width").asInstanceOf[Double]
+    )
+
+    val rect = createInstance("Rectangle")
+    rect.addVariable("length", 5.0)
+    rect.addVariable("width", 3.0)
+
+    // check calculated area
+    val area = rect.InvokeMethod("calculateArea", Map("length" -> 5.0, "width" -> 3.0))
+    area shouldBe 15.0
+  }
+
+  it should "support dynamic dispatch based on the class hierarchy" in {
+    // define base class
+    defineClass("cat", "sound", List(), _ => "meow")
+
+    // define subclass
+    defineClass("dog", "sound", List(), _ => "bark")
+
+    val animal = createInstance("cat")
+    val dog = createInstance("dog")
+
+    animal.InvokeMethod("sound", Map()) shouldBe "meow"
+    dog.InvokeMethod("sound", Map()) shouldBe "bark"
+  }
+
+  it should "handle missing methods gracefully" in {
+    // invoke method that DNE
+    defineClass("emptyClass", "deadMethod", List(), _ => "dead")
+    val instance = createInstance("emptyClass")
+
+    // method DNE
+    intercept[NoSuchElementException] {
+      instance.InvokeMethod("DNEMethod", Map())
+    }
+  }
 }

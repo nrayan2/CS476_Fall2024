@@ -3,6 +3,14 @@ import scala.collection.mutable
 object GateOperations {
   // mutable map to store gate assignments
   private val gateRegistry = mutable.Map[String, List[Double] => Double]()
+  private val classes = mutable.Map[String, ClassDef]()
+
+  def createClass(name: String, parent: Option[String] = None): ClassDef = {
+    val parentClass = parent.flatMap(classes.get)
+    val newClass = ClassDef(name, parent = parentClass)
+    classes(name) = newClass
+    newClass
+  }
 
   // assign a gate to variable name
   def assignGate(name: String, gate: List[Double] => Double): Unit = {
@@ -31,7 +39,8 @@ object GateOperations {
   def assignVariable(name: String, value: Double): Unit = {
     if (scopes.nonEmpty) {
       scopes.top(name) = value
-    } else {
+    } 
+    else {
       // global scope
       val globalScope = mutable.Map[String, Double](name -> value)
       scopes.push(globalScope)
@@ -51,4 +60,11 @@ object GateOperations {
     // computs absolute diff iteratively
     inputs.reduce((a, b) => math.abs(a - b))
   }
+
+  def addVariable(className: String, varName: String, value: Any): Unit = 
+    {classes.get(className).foreach(_.addVariable(varName, value))}
+  def addMethod(className: String, methodName: String, method: MethodDef): Unit = 
+    {classes.get(className).foreach(_.addMethod(methodName, method))}
+  def createInstance(className: String): ClassDef = 
+    {classes.getOrElse(className, throw new NoSuchElementException("class is not found"))}
 }
