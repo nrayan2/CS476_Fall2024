@@ -21,6 +21,12 @@ object Main {
     // calculates the absolute difference between membership values of two sets
     println("Fuzzy XOR: " + fuzzyXOR(setA, setB))
     // filters out elements with membership values less than the specified alpha
+    println("Fuzzy Union: " + fuzzyUnion(setA, setB))
+    println("Fuzzy Intersection: " + fuzzyIntersection(setA, setB))
+    println("Fuzzy Complement: " + fuzzyComplement(setA))
+    println("Fuzzy Addition: " + fuzzyAddition(setA, setB))
+    println("Fuzzy Multiplication: " + fuzzyMultiplication(setA, setB))
+    println("Fuzzy XOR: " + fuzzyXOR(setA, setB))
     println("Alpha Cut (0.6): " + alphaCut(setA, 0.6))
 
     // assign and eval normal gate
