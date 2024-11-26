@@ -1,8 +1,9 @@
 import GateOperations._
 import scala.collection.mutable
+import FuzzyLogic.Expr
 
 // case class for fuzzy gates
-case class FuzzyGate(name: String, operation: List[Double] => Double)
+case class FuzzyGate(name: String, operation: List[Expr] => Expr)
 
 // class representation for HW2
 case class ClassDef(
@@ -27,9 +28,28 @@ case class ClassDef(
   }
 }
 
-case class MethodDef(parameters: List[String], body: Map[String, Any] => Any) {def execute(params: Map[String, Any]): Any = body(params)}
+case class MethodDef(parameters: List[String], body: Map[String, Any] => Expr) {
+  def execute(params: Map[String, Any]): Expr = body(params)
+}
+
 
 object FuzzyLogicGates {
+
+  def conditional(cond: Expr, thenBranch: Expr, elseBranch: Expr): Expr = {
+  FuzzyLogic.IFTRUE(cond, thenBranch, elseBranch)
+}
+
+  def evaluateGate(gateName: String, inputs: List[Expr], env: Map[String, Double]): Option[Double] = {
+  gates.get(gateName).map { gate =>
+    val evaluatedInputs = inputs.map(FuzzyLogic.evaluate(_, env))
+    gate.operation(evaluatedInputs)
+  }
+}
+
+  def assignPartialGate(name: String, operation: List[Expr] => Expr): Unit = {
+    gates(name) = FuzzyGate(name, operation)
+  }
+
   // map to store gates and operations
   private val gates = mutable.Map[String, FuzzyGate]()
   private val classRegistry: mutable.Map[String, ClassDef] = mutable.Map()

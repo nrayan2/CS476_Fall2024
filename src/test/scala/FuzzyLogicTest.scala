@@ -187,4 +187,33 @@ class FuzzyLogicTest extends AnyFlatSpec with Matchers {
       instance.InvokeMethod("DNEMethod", Map())
     }
   }
+
+  behavior of "Partial Evaluation"
+
+  it should "partially evaluate arithmetic expressions" in {
+    val expr = Multiply(Value(3), Add(Value(5), Variable("x")))
+    val result = FuzzyLogic.partialEvaluate(expr)
+    result shouldBe Multiply(Value(3), Add(Value(5), Variable("x")))
+  }
+
+  it should "fully evaluate arithmetic expressions when variables are resolved" in {
+    val expr = Multiply(Value(3), Add(Value(5), Variable("x")))
+    val env = Map("x" -> 2.0)
+    val result = FuzzyLogic.evaluate(expr, env)
+    result shouldBe 21.0
+  }
+
+  it should "partially evaluate conditionals" in {
+    val conditionalExpr = FuzzyLogicGates.conditional(
+      Multiply(Value(2), Variable("x")),
+      Add(Variable("x"), Value(5)),
+      Multiply(Value(2), Variable("y"))
+    )
+    val result = FuzzyLogic.partialEvaluate(conditionalExpr)
+    result shouldBe FuzzyLogic.IFTRUE(
+      Multiply(Value(2), Variable("x")),
+      Add(Variable("x"), Value(5)),
+      Multiply(Value(2), Variable("y"))
+    )
+  }
 }

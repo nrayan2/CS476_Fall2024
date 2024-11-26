@@ -1,4 +1,6 @@
+import FuzzyLogic.{Expr, evaluate, partialEvaluate}
 import scala.collection.mutable
+
 
 object GateOperations {
   // mutable map to store gate assignments
@@ -11,6 +13,27 @@ object GateOperations {
     classes(name) = newClass
     newClass
   }
+
+  def invokeMethodPartial(instance: ClassDef, methodName: String, params: Map[String, Expr]): Expr = {
+    val method = instance.methods.getOrElse(methodName,
+      throw new NoSuchElementException(s"Method $methodName not found in ${instance.name}")
+    )
+    // Partial evaluate each parameter
+    val evaluatedParams = params.map { case (k, v) => (k, FuzzyLogic.partialEvaluate(v)) }
+    
+    // Convert parameters to Map[String, Any] for execution
+    val paramsAsAny = evaluatedParams.map { case (k, v) => (k, v.asInstanceOf[Any]) }
+    
+    // Execute method and partially evaluate the result
+    val result = method.execute(paramsAsAny)
+    FuzzyLogic.partialEvaluate(result)
+  }
+
+  def evalExprList(exprs: List[Expr], env: Map[String, Double]): List[Double] = {
+    exprs.map(expr => FuzzyLogic.evaluate(expr, env))
+  }
+  
+  def partialEvaluate(expr: Expr): Expr = FuzzyLogic.partialEvaluate(expr)
 
   // assign a gate to variable name
   def assignGate(name: String, gate: List[Double] => Double): Unit = {
